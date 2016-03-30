@@ -9,25 +9,28 @@ var todoNextId = 1;
 
 app.use(bodyParser.json());
 
-app.get('/', function (req, res) {
+app.get('/', function(req, res) {
 	res.send('Todo API Root');
 });
 
 // GET /todos?completed=false&q=work
-app.get('/todos', function (req, res) {
+app.get('/todos', function(req, res) {
 	var queryParams = req.query;
 	var filteredTodos = todos;
 
 	// if hasProperty && completed === 'true'
-	if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'true')
-	{
-		filteredTodos = _.where(filteredTodos, {completed: true});
-	} else if (queryParams.hasOwnProperty('completed') &&  queryParams.completed === 'false') {
-		filteredTodos = _.where(filteredTodos, {completed: false});
+	if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'true') {
+		filteredTodos = _.where(filteredTodos, {
+			completed: true
+		});
+	} else if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'false') {
+		filteredTodos = _.where(filteredTodos, {
+			completed: false
+		});
 	}
 
 	if (queryParams.hasOwnProperty('q') && queryParams.q.length > 0) {
-		filteredTodos = _.filter(filteredTodos, function (todo) {
+		filteredTodos = _.filter(filteredTodos, function(todo) {
 			return todo.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1;
 		});
 	}
@@ -37,9 +40,11 @@ app.get('/todos', function (req, res) {
 });
 
 // GET /todos/:id
-app.get('/todos/:id', function (req, res) {
+app.get('/todos/:id', function(req, res) {
 	var todoId = parseInt(req.params.id, 10);
-	var matchedTodo = _.findWhere(todos, {id: todoId});
+	var matchedTodo = _.findWhere(todos, {
+		id: todoId
+	});
 	// the above line replaces the lines below....
 
 	// var matchedTodo;
@@ -54,13 +59,13 @@ app.get('/todos/:id', function (req, res) {
 	} else {
 		res.status(404).send();
 	}
-	
+
 });
 
 // POST /todos
 // add validation - make sure description and completed are not null
 
-app.post('/todos', function (req, res) {
+app.post('/todos', function(req, res) {
 	var body = _.pick(req.body, 'description', 'completed'); // use _.pick to only pick description and completed
 
 	if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0) {
@@ -82,10 +87,14 @@ app.post('/todos', function (req, res) {
 // DELETE /todos/:id
 app.delete('/todos/:id', function(req, res) {
 	var todoId = parseInt(req.params.id, 10);
-	var matchedTodo = _.findWhere(todos, {id: todoId});
+	var matchedTodo = _.findWhere(todos, {
+		id: todoId
+	});
 
 	if (!matchedTodo) {
-		res.status(404).json({"error": "no todo found with that id"});
+		res.status(404).json({
+			"error": "no todo found with that id"
+		});
 	} else {
 		todos = _.without(todos, matchedTodo);
 		res.json(matchedTodo);
@@ -93,10 +102,12 @@ app.delete('/todos/:id', function(req, res) {
 });
 
 //PUT /todos/:id
-app.put('/todos/:id', function (req, res) {
-		var todoId = parseInt(req.params.id, 10);
-	var matchedTodo = _.findWhere(todos, {id: todoId});
-	var body = _.pick(req.body, 'description', 'completed'); 
+app.put('/todos/:id', function(req, res) {
+	var todoId = parseInt(req.params.id, 10);
+	var matchedTodo = _.findWhere(todos, {
+		id: todoId
+	});
+	var body = _.pick(req.body, 'description', 'completed');
 	var validAttributes = {};
 
 	if (!matchedTodo) {
@@ -117,7 +128,7 @@ app.put('/todos/:id', function (req, res) {
 	} else if (body.hasOwnProperty('description')) {
 		// has completed property but it is not String or it is empty
 		return res.status(400).send();
-	} 
+	}
 
 	_.extend(matchedTodo, validAttributes);
 
@@ -125,6 +136,6 @@ app.put('/todos/:id', function (req, res) {
 
 });
 
-app.listen(PORT, function () {
+app.listen(PORT, function() {
 	console.log('Express listening on port ' + PORT + '!');
 });
