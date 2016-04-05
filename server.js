@@ -34,7 +34,7 @@ app.get('/todos', middleware.requireAuthentication, function(req, res) {
 		where.description = {
 			$like: '%' + query.q + '%'
 		};
-	};
+	}
 
 	db.todo.findAll({
 		where: where
@@ -154,20 +154,31 @@ app.post('/users', function(req, res) {
 
 // POST /users/login
 app.post('/users/login', function(req, res) {
-	var body = _.pick(req.body, 'email', 'password'); // use _.pick to only pick email and password
+	var body = _.pick(req.body, 'email', 'password'); 
+	var userInstance;
 
-	db.user.authenticate(body).then(function(user) {
+	db.user.authenticate(body).then(function (user) {
 		var token = user.generateToken('authentication');
+		userInstance = user;
 
-		if (token) {
-			res.header('Auth', token).json(user.toPublicJSON());
-		} else {
-			res.status(401).send();
-		}
-	}, function() {
+		return db.token.create({
+			token: token
+		});
+	}).then(function (tokenInstance) {
+		res.header('Auth', tokenInstance.get('token')).json(userInstance.toPublicJSON());
+	}).catch(function () {
 		res.status(401).send();
 	});
 
+});
+
+// DELETE /users/login - this methoed requires authentication
+app.delete('/users/login', middleware.requireAuthentication, function (req, res) {
+	req.token.destroy().then(function () {
+		res.status(204).send();
+	}).catch(function () {
+		res.status(500).send();
+	});
 });
 
 db.sequelize.sync({
